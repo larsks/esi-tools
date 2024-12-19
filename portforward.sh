@@ -15,7 +15,7 @@ die() {
   exit 1
 }
 
-while getopts tun: ch; do
+while getopts tun:s: ch; do
   case $ch in
   t) protocol=tcp ;;
   u) protocol=udp ;;
@@ -35,6 +35,9 @@ if ! (($# >= 3)); then
 fi
 
 [[ -z "$network" ]] || die "you must provide a network name"
+
+# This should really pick a random subnet, rather than defaulting to a fixed
+# name.
 [[ -z "$subnet" ]] || subnet="${network}-subnet"
 
 internalip=$1
