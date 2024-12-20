@@ -7,7 +7,7 @@ network=$ESI_NETWORK
 subnet=$ESI_NETWORK_SUBNET
 
 usage() {
-  echo "$0: usage: $0 [-t|-u] <internalip> <port> <externalip> [<port>]"
+  echo "$0: usage: $0 [-t|-u] [-d description] [-n network] [-s subnet] internalip port externalip [port]"
 }
 
 die() {
@@ -15,8 +15,9 @@ die() {
   exit 1
 }
 
-while getopts tun:s: ch; do
+while getopts d:tun:s: ch; do
   case $ch in
+  d) description=$OPTARG ;;
   t) protocol=tcp ;;
   u) protocol=udp ;;
   n) network=$OPTARG ;;
@@ -34,11 +35,11 @@ if ! (($# >= 3)); then
   exit 2
 fi
 
-[[ -z "$network" ]] || die "you must provide a network name"
+[[ -z "$network" ]] && die "you must provide a network name"
 
 # This should really pick a random subnet, rather than defaulting to a fixed
 # name.
-[[ -z "$subnet" ]] || subnet="${network}-subnet"
+[[ -z "$subnet" ]] && subnet="${network}-subnet"
 
 internalip=$1
 internalport=$2
@@ -57,4 +58,5 @@ openstack floating ip port forwarding create "$externalip" \
   --protocol "$protocol" \
   --internal-ip-address "$internalip" --internal-protocol-port "$internalport" \
   --external-protocol-port "$externalport" \
-  --port "$internalip_port"
+  --port "$internalip_port" \
+  ${description:+--description "$description"}
