@@ -13,6 +13,10 @@ shift $((OPTIND - 1))
 set -e
 
 for node in "$@"; do
+  # this would be easier if we had `openstack esi node network detach --all ...`
+  # or even something like `openstack esi node network attach --exclusive --network provisioning ...`
+  echo "$node: detach all ports"
+  openstack esi node network list --node "$node" -f json | jq '.[]|select(.Port != null).Port' -r | xargs -r -IPORT openstack esi node network detach --port PORT "$node"
   echo "$node: set deploy interface"
   openstack baremetal node set --instance-info deploy_interface=ramdisk "$node"
   echo "$node: set boot_iso url"
